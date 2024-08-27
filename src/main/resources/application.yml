@@ -1,0 +1,6 @@
+logging:
+  level:
+    root: INFO
+    com.zaxxer.hikari: TRACE
+    com.zaxxer.hikari.HikariConfig: DEBUG
+    java.sql.SQLTransientConnectionException: TRACE
