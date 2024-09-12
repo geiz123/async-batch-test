@@ -1,14 +1,16 @@
 package com.test;
 
+import java.sql.SQLException;
+
 import javax.sql.DataSource;
 
-import org.springframework.boot.autoconfigure.batch.BatchDataSource;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -27,18 +29,38 @@ public class AppDataSourceConfiguration {
 //		hikariDataSource.setPoolName("PrimayPool");
 //		return hikariDataSource;
 //	}
-	
+
 	@Bean
 	@Primary
 	public DataSource datasource() {
 		HikariDataSource hikariDataSource = (HikariDataSource) DataSourceBuilder
 				.create(HikariDataSource.class.getClassLoader()).username("sa").password("")
-				.url("jdbc:hsqldb:mem:testdb;DB_CLOSE_DELAY=-1;").driverClassName("org.hsqldb.jdbc.JDBCDriver")
-				.build();
+				.url("jdbc:hsqldb:mem:testdb;DB_CLOSE_DELAY=-1;").driverClassName("org.hsqldb.jdbc.JDBCDriver").build();
 		hikariDataSource.setMaximumPoolSize(1);
 		hikariDataSource.setConnectionTimeout(5000);
 		hikariDataSource.setPoolName("PrimayPool");
 		return hikariDataSource;
+	}
+
+	@Bean("metaDs")
+	public DataSource metaDatasource() throws SQLException {
+		DataSource dataSource = DataSourceBuilder
+				.create()
+				.username("sa")
+				.password("")
+				.url("jdbc:hsqldb:mem:metadb;sql.enforce_strict_size=true;hsqldb.txt=mvcc;DB_CLOSE_DELAY=-1")
+				.driverClassName("org.hsqldb.jdbc.JDBCDriver")
+				.build();
+
+
+		// initialize with metadata tables
+		DefaultResourceLoader drl = new DefaultResourceLoader();
+		ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
+		rdp.addScript(drl.getResource("/org/springframework/batch/core/schema-hsqldb.sql"));
+		DatabasePopulatorUtils.execute(rdp, dataSource);
+
+		return dataSource;
+
 	}
 	
 //	@Bean

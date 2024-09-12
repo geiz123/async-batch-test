@@ -31,6 +31,7 @@ import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.ParseException;
 import org.springframework.batch.item.UnexpectedInputException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -46,7 +47,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
 @SpringBootApplication
-public class AppConfiguration extends DefaultBatchConfiguration{
+public class AppConfiguration extends DefaultBatchConfiguration {
 
 	public static void main(String[] args) {
 		ApplicationContext ctx = SpringApplication.run(AppConfiguration.class, args);
@@ -67,6 +68,10 @@ public class AppConfiguration extends DefaultBatchConfiguration{
 
 	@Autowired
 	DataSource dataSource;
+	
+	@Autowired
+	@Qualifier("metaDs")
+	DataSource metaDataSource;
 
 	@Bean
 	public Job testJob() {
@@ -205,15 +210,15 @@ public class AppConfiguration extends DefaultBatchConfiguration{
 //			.setType(EmbeddedDatabaseType.H2)
 //			.build();
 	
-	EmbeddedDatabase embeddedDatabase = new EmbeddedDatabaseBuilder()
-			.generateUniqueName(true)
-			.addScript("/org/springframework/batch/core/schema-hsqldb.sql")
-			.setType(EmbeddedDatabaseType.HSQL)
-			.build();
+//	EmbeddedDatabase embeddedDatabase = new EmbeddedDatabaseBuilder()
+//			.generateUniqueName(true)
+//			.addScript("/org/springframework/batch/core/schema-hsqldb.sql")
+//			.setType(EmbeddedDatabaseType.HSQL)
+//			.build();
 	
 	@Override
 	protected DataSource getDataSource() {
-		return embeddedDatabase;
+		return metaDataSource;
 	}
 	
 	
